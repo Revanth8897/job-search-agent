@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jobs | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    const mockJobs = [
+      {
+        title: "Frontend Developer",
+        company: "Google",
+        location: "Remote",
+        type: "Full-time",
+        source: "Indeed"
+      },
+      {
+        title: "Data Analyst Intern",
+        company: "Microsoft",
+        location: "Hyderabad",
+        type: "Internship",
+        source: "LinkedIn"
+      },
+      {
+        title: "Backend Engineer",
+        company: "Amazon",
+        location: "Bangalore",
+        type: "Full-time",
+        source: "Naukri"
+      }
+    ];
+
+    renderDashboardLayout({
+      active: "jobs",
+      content: `
+        <h1 style="font-size:28px; font-weight:900;">Job Matches</h1>
+        <p class="muted" style="margin-top:6px;">
+          Week 2 UI: job cards (mock data).
+        </p>
+
+        <div class="jobs-grid">
+          ${mockJobs.map((job) => `
+            <div class="job-card">
+              <div class="job-title">${job.title}</div>
+              <div class="job-company">${job.company}</div>
+
+              <div class="job-meta">
+                <span class="badge">${job.location}</span>
+                <span class="badge">${job.type}</span>
+                <span class="badge">Source: ${job.source}</span>
+              </div>
+
+              <button class="btn btn-primary" style="margin-top:14px;">
+                View Job
+              </button>
+            </div>
+          `).join("")}
+        </div>
+      `
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skills | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    const mockSkills = [
+      "JavaScript",
+      "HTML",
+      "CSS",
+      "React",
+      "Node.js",
+      "SQL",
+      "Git",
+      "REST API",
+      "Tailwind"
+    ];
+
+    renderDashboardLayout({
+      active: "skills",
+      content: `
+        <h1 style="font-size:28px; font-weight:900;">Extracted Skills</h1>
+        <p class="muted" style="margin-top:6px;">
+          Week 2 UI: shows extracted skills from resume.
+        </p>
+
+        <div class="card" style="margin-top:18px;">
+          <h2 style="font-weight:900;">Skills Found</h2>
+          <div class="skills-wrap">
+            ${mockSkills.map((s) => `<span class="skill-chip">${s}</span>`).join("")}
+          </div>
+        </div>
+      `
+    });
+  </script>
+</body>
+</html>

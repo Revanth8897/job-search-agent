@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    renderDashboardLayout({
+      active: "home",
+      content: `
+        <h1 style="font-size:28px; font-weight:900;">Dashboard</h1>
+        <p class="muted" style="margin-top:6px;">
+          Week 1: Auth pages + Dashboard layout + UI wireframes.
+        </p>
+
+        <div class="grid-3">
+          <div class="card">
+            <h3 style="font-weight:900;">Resume Upload</h3>
+            <p class="muted" style="margin-top:6px;">Coming in Week 2</p>
+          </div>
+
+          <div class="card">
+            <h3 style="font-weight:900;">Job Recommendations</h3>
+            <p class="muted" style="margin-top:6px;">Coming in Week 3</p>
+          </div>
+
+          <div class="card">
+            <h3 style="font-weight:900;">Tracking</h3>
+            <p class="muted" style="margin-top:6px;">Coming in Week 3</p>
+          </div>
+        </div>
+      `
+    });
+  </script>
+</body>
+</html>

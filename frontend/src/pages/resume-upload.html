@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Upload | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    renderDashboardLayout({
+      active: "resume",
+      content: `
+        <h1 style="font-size:28px; font-weight:900;">Resume Upload</h1>
+        <p class="muted" style="margin-top:6px;">
+          Upload your resume (PDF/DOCX). Week 2 UI only.
+        </p>
+
+        <div class="card" style="margin-top:18px;">
+          <div class="upload-box" id="uploadBox">
+            <p class="upload-title">Drag & Drop Resume Here</p>
+            <p class="upload-sub">or click to select file</p>
+
+            <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden />
+            <p class="file-name" id="fileName"></p>
+
+            <button class="btn btn-primary" id="uploadBtn" style="margin-top:16px;">
+              Upload Resume
+            </button>
+          </div>
+        </div>
+      `
+    });
+
+    const uploadBox = document.getElementById("uploadBox");
+    const fileInput = document.getElementById("fileInput");
+    const fileName = document.getElementById("fileName");
+    const uploadBtn = document.getElementById("uploadBtn");
+
+    uploadBox.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (file) fileName.textContent = `Selected: ${file.name}`;
+    });
+
+    // Drag drop UI
+    uploadBox.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadBox.classList.add("dragover");
+    });
+
+    uploadBox.addEventListener("dragleave", () => {
+      uploadBox.classList.remove("dragover");
+    });
+
+    uploadBox.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadBox.classList.remove("dragover");
+
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+
+      fileInput.files = e.dataTransfer.files;
+      fileName.textContent = `Selected: ${file.name}`;
+    });
+
+    // Mock upload
+    uploadBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please select a resume first.");
+        return;
+      }
+
+      uploadBtn.disabled = true;
+      uploadBtn.classList.add("btn-loading");
+      uploadBtn.innerHTML = `<span class="spinner"></span> Uploading...`;
+
+      await new Promise((r) => setTimeout(r, 1200));
+
+      uploadBtn.disabled = false;
+      uploadBtn.classList.remove("btn-loading");
+      uploadBtn.innerHTML = "Upload Resume";
+
+      alert("Resume uploaded successfully (mock).");
+    });
+  </script>
+</body>
+</html>

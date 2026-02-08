@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wireframes | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    renderDashboardLayout({
+      active: "wireframes",
+      content: `
+        <h1 style="font-size:28px; font-weight:900;">UI Wireframes</h1>
+        <p class="muted" style="margin-top:6px;">
+          Placeholders for Week 2 and Week 3 UI.
+        </p>
+
+        <div class="card" style="margin-top:18px;">
+          <h2 style="font-weight:900;">Resume Upload (Week 2)</h2>
+          <div class="placeholder">Upload box placeholder</div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2 style="font-weight:900;">Job Recommendations (Week 3)</h2>
+          <div class="grid-3" style="margin-top:14px;">
+            <div class="card" style="background:#f8fafc;">
+              <strong>Frontend Developer</strong>
+              <p class="muted">Company Name</p>
+              <p class="muted" style="font-size:13px; margin-top:8px;">Remote • Full-time</p>
+            </div>
+            <div class="card" style="background:#f8fafc;">
+              <strong>Data Analyst</strong>
+              <p class="muted">Company Name</p>
+              <p class="muted" style="font-size:13px; margin-top:8px;">Hyderabad • Internship</p>
+            </div>
+            <div class="card" style="background:#f8fafc;">
+              <strong>Backend Engineer</strong>
+              <p class="muted">Company Name</p>
+              <p class="muted" style="font-size:13px; margin-top:8px;">Remote • Full-time</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2 style="font-weight:900;">Tracking (Week 3)</h2>
+
+          <div style="margin-top:14px; border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; background:#f1f5f9; padding:12px; font-weight:900;">
+              <div>Job</div>
+              <div>Status</div>
+              <div>Date</div>
+              <div>Action</div>
+            </div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; padding:12px;">
+              <div>Frontend Dev</div>
+              <div class="muted">Applied</div>
+              <div class="muted">2026-02-01</div>
+              <div><span class="link">View</span></div>
+            </div>
+          </div>
+        </div>
+      `
+    });
+  </script>
+</body>
+</html>

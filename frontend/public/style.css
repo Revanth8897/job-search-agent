@@ -1,0 +1,458 @@
+:root {
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --primary: #0f172a;
+  --danger: #dc2626;
+  --blue: #2563eb;
+  --radius: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Common */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.btn {
+  border: none;
+  padding: 12px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  width: 100%;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 6px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #94a3b8;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.link {
+  color: var(--blue);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Auth Pages */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-title {
+  font-size: 26px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+/* Dashboard */
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 260px;
+  background: white;
+  border-right: 1px solid var(--border);
+  padding: 18px;
+  display: none;
+}
+
+.sidebar h2 {
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 20px;
+}
+
+.nav a {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.nav a:hover {
+  background: #f8fafc;
+}
+
+.nav a.active {
+  background: var(--primary);
+  color: white;
+}
+
+.main {
+  flex: 1;
+}
+
+.topbar {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page {
+  padding: 24px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.placeholder {
+  border: 2px dashed var(--border);
+  padding: 30px;
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+@media (min-width: 900px) {
+  .sidebar {
+    display: block;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+/* --- Login error UX --- */
+.input-error {
+  border: 2px solid var(--danger) !important;
+  animation: shake 0.25s ease-in-out;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0px); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-6px); }
+  100% { transform: translateX(0px); }
+}
+/* ------------------------------
+   AUTH PAGE COLOR UPGRADE
+--------------------------------*/
+
+body {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%);
+  min-height: 100vh;
+}
+
+.auth-wrap {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.auth-card {
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.auth-title {
+  background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7);
+  color: white;
+}
+
+.btn-primary:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  transition: 0.2s;
+}
+
+.input {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.input:focus {
+  border: 2px solid #6366f1;
+}
+/* Dashboard should stay clean */
+.dashboard body,
+.dashboard {
+  background: var(--bg) !important;
+}
+/* ------------------------------
+   PREMIUM AUTH BACKGROUND BLOBS
+--------------------------------*/
+
+.auth-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated glowing blobs */
+.auth-wrap::before,
+.auth-wrap::after {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.6;
+  z-index: 0;
+  animation: floatBlob 10s ease-in-out infinite;
+}
+
+.auth-wrap::before {
+  top: -120px;
+  left: -140px;
+  background: #38bdf8;
+}
+
+.auth-wrap::after {
+  bottom: -140px;
+  right: -140px;
+  background: #a855f7;
+  animation-delay: 2s;
+}
+
+@keyframes floatBlob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(40px, 30px) scale(1.1); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+/* Make sure card stays above blobs */
+.auth-card {
+  position: relative;
+  z-index: 2;
+}
+
+/* Smooth card entry animation */
+.auth-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+/* Input glow on focus */
+.input:focus {
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+}
+.dashboard {
+  background: var(--bg) !important;
+}
+.page-animate {
+  animation: pageFade 0.5s ease-out;
+}
+
+@keyframes pageFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+/* --- Loading Spinner for Buttons --- */
+.btn-loading {
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: rgba(255, 255, 255, 1);
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+/* ------------------------------
+   WEEK 2 UI COMPONENTS
+--------------------------------*/
+
+/* Upload Box */
+.upload-box {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 30px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.upload-box.dragover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.upload-title {
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.upload-sub {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.file-name {
+  margin-top: 12px;
+  font-weight: 800;
+}
+
+/* Skill chips */
+.skills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.skill-chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* Job Cards */
+.jobs-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.job-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: 0.2s;
+}
+
+.job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.job-title {
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.job-company {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.job-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+}
