@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saved Jobs | Job Agent</title>
+
+  <!-- FIX: correct css file name -->
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    const STORAGE_KEY = "saved_jobs";
+
+    // Same mock jobs list (must match jobs.html IDs)
+    const jobs = [
+      {
+        id: "job1",
+        title: "Frontend Developer",
+        company: "Google",
+        location: "Remote",
+        type: "Full-time",
+        source: "Indeed",
+        desc: "Build modern UI, optimize performance, and collaborate with design + backend teams."
+      },
+      {
+        id: "job2",
+        title: "Data Analyst Intern",
+        company: "Microsoft",
+        location: "Hyderabad",
+        type: "Internship",
+        source: "LinkedIn",
+        desc: "Analyze datasets, build dashboards, and support product decisions using data."
+      },
+      {
+        id: "job3",
+        title: "Backend Engineer",
+        company: "Amazon",
+        location: "Bangalore",
+        type: "Full-time",
+        source: "Naukri",
+        desc: "Work on APIs, databases, and scalable backend systems with clean architecture."
+      }
+    ];
+
+    function getSavedIds() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function setSavedIds(ids) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+
+      // 🔥 notify sidebar badge
+      window.dispatchEvent(new Event("savedJobsUpdated"));
+    }
+
+    function removeSaved(id) {
+      const ids = getSavedIds().filter((x) => x !== id);
+      setSavedIds(ids);
+    }
+
+    function clearAllSaved() {
+      setSavedIds([]);
+    }
+
+    function openModal(job) {
+      const modal = document.createElement("div");
+      modal.className = "modal-backdrop";
+
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-head">
+            <div>
+              <div style="font-weight:900; font-size:18px;">${job.title}</div>
+              <div class="muted">${job.company}</div>
+            </div>
+            <button class="modal-close" id="closeModal">✕</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="job-meta">
+              <span class="badge">${job.location}</span>
+              <span class="badge">${job.type}</span>
+              <span class="badge">Source: ${job.source}</span>
+            </div>
+
+            <div style="margin-top:14px;">
+              <h3 style="font-weight:900;">Description</h3>
+              <p class="muted" style="margin-top:6px; line-height:1.6;">
+                ${job.desc}
+              </p>
+            </div>
+
+            <div class="row" style="margin-top:18px;">
+              <button class="btn btn-primary" id="applyNow">Apply Now</button>
+              <button class="btn btn-danger" id="removeSaved">Remove</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      function close() {
+        modal.remove();
+      }
+
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) close();
+      });
+
+      modal.querySelector("#closeModal").addEventListener("click", close);
+
+      modal.querySelector("#applyNow").addEventListener("click", () => {
+        alert(`(Mock) Applying for: ${job.title}`);
+        close();
+      });
+
+      modal.querySelector("#removeSaved").addEventListener("click", () => {
+        removeSaved(job.id);
+        close();
+        renderPage();
+      });
+    }
+
+    function renderPage() {
+      const savedIds = getSavedIds();
+      const savedJobs = jobs.filter((j) => savedIds.includes(j.id));
+
+      renderDashboardLayout({
+        active: "saved",
+        content: `
+          <h1 class="section-title">Saved Jobs</h1>
+          <p class="section-subtitle">
+            Jobs you saved for later. Stored locally (Week 2 feature).
+          </p>
+
+          <div class="filter-bar">
+            <span class="badge">${savedJobs.length} saved</span>
+
+            <button class="btn btn-outline" id="clearBtn" ${savedJobs.length === 0 ? "disabled" : ""}>
+              Clear All
+            </button>
+
+            <a class="btn btn-primary" href="./jobs.html">
+              Browse Jobs
+            </a>
+          </div>
+
+          ${
+            savedJobs.length === 0
+              ? `
+                <div class="card" style="margin-top:18px;">
+                  <h2 style="font-weight:900;">No saved jobs yet</h2>
+                  <p class="muted" style="margin-top:6px;">
+                    Go to Jobs page and click "Save".
+                  </p>
+                </div>
+              `
+              : `
+                <div class="jobs-grid" id="savedGrid">
+                  ${savedJobs.map((job) => `
+                    <div class="job-card">
+                      <div class="job-left" style="cursor:pointer;" data-open="${job.id}">
+                        <div class="job-title">${job.title}</div>
+                        <div class="job-company">${job.company}</div>
+
+                        <div class="job-meta">
+                          <span class="badge">${job.location}</span>
+                          <span class="badge">${job.type}</span>
+                          <span class="badge">Source: ${job.source}</span>
+                        </div>
+
+                        <div class="job-desc">${job.desc}</div>
+                      </div>
+
+                      <div class="job-actions">
+                        <button class="btn btn-danger" data-remove="${job.id}">
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  `).join("")}
+                </div>
+              `
+          }
+        `
+      });
+
+      // Clear all
+      const clearBtn = document.getElementById("clearBtn");
+      if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+          const ok = confirm("Clear all saved jobs?");
+          if (!ok) return;
+          clearAllSaved();
+          renderPage();
+        });
+      }
+
+      // Remove single
+      document.querySelectorAll("[data-remove]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-remove");
+          removeSaved(id);
+          renderPage();
+        });
+      });
+
+      // Open modal
+      document.querySelectorAll("[data-open]").forEach((el) => {
+        el.addEventListener("click", () => {
+          const id = el.getAttribute("data-open");
+          const job = jobs.find((j) => j.id === id);
+          if (job) openModal(job);
+        });
+      });
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>

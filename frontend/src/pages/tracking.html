@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tracking | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    const TRACKING_KEY = "tracking_jobs";
+
+    const STATUS = ["Saved", "Applied", "Interview", "Offer", "Rejected"];
+
+    function getTracking() {
+      try {
+        return JSON.parse(localStorage.getItem(TRACKING_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function setTracking(list) {
+      localStorage.setItem(TRACKING_KEY, JSON.stringify(list));
+    }
+
+    function formatDate(iso) {
+      if (!iso) return "-";
+      try {
+        const d = new Date(iso);
+        return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      } catch {
+        return "-";
+      }
+    }
+
+    function statusClass(s) {
+      if (s === "Saved") return "status-pill status-saved";
+      if (s === "Applied") return "status-pill status-applied";
+      if (s === "Interview") return "status-pill status-interview";
+      if (s === "Offer") return "status-pill status-offer";
+      if (s === "Rejected") return "status-pill status-rejected";
+      return "status-pill";
+    }
+
+    function renderPage() {
+      const tracking = getTracking();
+
+      renderDashboardLayout({
+        active: "tracking",
+        content: `
+          <h1 class="section-title">Tracking</h1>
+          <p class="section-subtitle">
+            Track your job applications (stored locally for Week 3 demo).
+          </p>
+
+          <div class="filter-bar">
+            <input class="input" id="searchTrack"
+              placeholder="Search title / company..."
+              style="flex:1; min-width:240px;" />
+
+            <select class="select" id="statusFilter">
+              <option value="all">All Status</option>
+              ${STATUS.map((s) => `<option value="${s}">${s}</option>`).join("")}
+            </select>
+
+            <div class="badge" id="trackCount">0 jobs</div>
+
+            <button class="btn btn-outline" id="clearTrackingBtn">
+              Clear All
+            </button>
+          </div>
+
+          ${
+            tracking.length === 0
+              ? `
+                <div class="card" style="margin-top:18px;">
+                  <h2 style="font-weight:900;">No tracked jobs yet</h2>
+                  <p class="muted" style="margin-top:6px;">
+                    Go to Recommendations → Apply. Then jobs will appear here.
+                  </p>
+                  <div class="row">
+                    <a class="btn btn-primary" href="./recommendations.html" style="width:auto;">
+                      Go to Recommendations
+                    </a>
+                  </div>
+                </div>
+              `
+              : `
+                <div class="jobs-grid" id="trackGrid"></div>
+              `
+          }
+        `
+      });
+
+      const searchTrack = document.getElementById("searchTrack");
+      const statusFilter = document.getElementById("statusFilter");
+      const trackCount = document.getElementById("trackCount");
+      const clearTrackingBtn = document.getElementById("clearTrackingBtn");
+      const trackGrid = document.getElementById("trackGrid");
+
+      if (clearTrackingBtn) {
+        clearTrackingBtn.addEventListener("click", () => {
+          const ok = confirm("Clear all tracked jobs?");
+          if (!ok) return;
+          setTracking([]);
+          renderPage();
+        });
+      }
+
+      function renderList(list) {
+        if (!trackGrid) return;
+
+        trackCount.textContent = `${list.length} jobs`;
+
+        trackGrid.innerHTML = list.map((job) => `
+          <div class="job-card">
+            <div class="job-left">
+              <div class="track-row">
+                <div class="track-left">
+                  <div class="job-title">${job.title}</div>
+                  <div class="job-company">${job.company}</div>
+
+                  <div class="job-meta">
+                    <span class="badge">${job.location || "-"}</span>
+                    <span class="badge">${job.type || "-"}</span>
+                    <span class="badge">Source: ${job.source || "-"}</span>
+                    <span class="${statusClass(job.status)}">${job.status}</span>
+                  </div>
+
+                  <div class="muted" style="margin-top:10px; font-size:13px;">
+                    Applied at: <strong>${formatDate(job.appliedAt)}</strong>
+                  </div>
+                </div>
+
+                <div class="track-right">
+                  <select class="select" data-status="${job.id}">
+                    ${STATUS.map((s) =>
+                      `<option value="${s}" ${s === job.status ? "selected" : ""}>${s}</option>`
+                    ).join("")}
+                  </select>
+
+                  <button class="btn btn-outline" data-view="${job.id}">
+                    View
+                  </button>
+
+                  <button class="btn btn-danger" data-remove="${job.id}">
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join("");
+
+        // Update status
+        document.querySelectorAll("[data-status]").forEach((select) => {
+          select.addEventListener("change", () => {
+            const id = select.getAttribute("data-status");
+            const newStatus = select.value;
+
+            const updated = getTracking().map((x) => {
+              if (x.id === id) return { ...x, status: newStatus };
+              return x;
+            });
+
+            setTracking(updated);
+            applyFilters();
+          });
+        });
+
+        // Remove job
+        document.querySelectorAll("[data-remove]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-remove");
+            const ok = confirm("Remove this tracked job?");
+            if (!ok) return;
+
+            const updated = getTracking().filter((x) => x.id !== id);
+            setTracking(updated);
+            renderPage();
+          });
+        });
+
+        // View job details modal
+        document.querySelectorAll("[data-view]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-view");
+            const job = getTracking().find((x) => x.id === id);
+            if (job) openModal(job);
+          });
+        });
+      }
+
+      function openModal(job) {
+        const modal = document.createElement("div");
+        modal.className = "modal-backdrop";
+
+        modal.innerHTML = `
+          <div class="modal">
+            <div class="modal-head">
+              <div>
+                <div style="font-weight:900; font-size:18px;">${job.title}</div>
+                <div class="muted">${job.company}</div>
+              </div>
+              <button class="modal-close" id="closeModal">✕</button>
+            </div>
+
+            <div class="modal-body">
+              <div class="job-meta">
+                <span class="badge">${job.location || "-"}</span>
+                <span class="badge">${job.type || "-"}</span>
+                <span class="badge">Source: ${job.source || "-"}</span>
+                <span class="${statusClass(job.status)}">${job.status}</span>
+              </div>
+
+              <div style="margin-top:14px;">
+                <h3 style="font-weight:900;">Cover Letter</h3>
+                <p class="muted" style="margin-top:6px; line-height:1.6;">
+                  ${job.coverLetter ? job.coverLetter : "No cover letter added."}
+                </p>
+              </div>
+
+              <div style="margin-top:14px;">
+                <h3 style="font-weight:900;">Notes</h3>
+                <p class="muted" style="margin-top:6px; line-height:1.6;">
+                  ${job.notes ? job.notes : "No notes added."}
+                </p>
+              </div>
+
+              <div class="row" style="margin-top:18px;">
+                <a class="btn btn-primary" href="./recommendations.html" style="width:auto;">
+                  Back to Recommendations
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        function close() {
+          modal.remove();
+        }
+
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) close();
+        });
+
+        modal.querySelector("#closeModal").addEventListener("click", close);
+      }
+
+      function applyFilters() {
+        const q = searchTrack.value.trim().toLowerCase();
+        const s = statusFilter.value;
+
+        const list = getTracking().filter((job) => {
+          const matchText =
+            job.title.toLowerCase().includes(q) ||
+            job.company.toLowerCase().includes(q);
+
+          const matchStatus = s === "all" ? true : job.status === s;
+
+          return matchText && matchStatus;
+        });
+
+        renderList(list);
+      }
+
+      if (searchTrack) searchTrack.addEventListener("input", applyFilters);
+      if (statusFilter) statusFilter.addEventListener("change", applyFilters);
+
+      applyFilters();
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>
+
+<!-- week 3 -->

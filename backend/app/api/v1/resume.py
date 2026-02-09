@@ -50,6 +50,7 @@ def upload_resume(
 from app.services.job_matcher import match_job
 from app.models.job import Job
 
+# for matching jobs
 @router.get("/match-jobs")
 def match_jobs(resume_skills: list[str], db: Session = Depends(get_db)):
     jobs = db.query(Job).all()
@@ -57,13 +58,14 @@ def match_jobs(resume_skills: list[str], db: Session = Depends(get_db)):
 
     for job in jobs:
         job_skills = job.skills.split(",")
-        score = match_job(resume_skills, job_skills)
+
+        match_result = match_job(resume_skills, job_skills)
 
         results.append({
             "job_id": job.id,
             "title": job.title,
             "company": job.company_name,
-            "match_percentage": score
+            **match_result
         })
 
     return sorted(results, key=lambda x: x["match_percentage"], reverse=True)

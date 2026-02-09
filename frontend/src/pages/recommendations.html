@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recommendations | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    const STORAGE_KEY = "saved_jobs";
+
+    const recommendations = [
+      {
+        id: "rec1",
+        title: "Frontend Developer (React)",
+        company: "Google",
+        location: "Remote",
+        type: "Full-time",
+        source: "Indeed",
+        score: 92,
+        why: ["JavaScript", "HTML", "CSS", "React", "REST API"],
+        desc: "Work on high performance UI systems, build reusable components, and collaborate with product + design."
+      },
+      {
+        id: "rec2",
+        title: "Data Analyst Intern",
+        company: "Microsoft",
+        location: "Hyderabad",
+        type: "Internship",
+        source: "LinkedIn",
+        score: 84,
+        why: ["SQL", "Excel", "Python", "Dashboards"],
+        desc: "Analyze business datasets, build dashboards, and support product decisions with insights."
+      },
+      {
+        id: "rec3",
+        title: "Junior Software Engineer",
+        company: "Amazon",
+        location: "Bangalore",
+        type: "Full-time",
+        source: "Naukri",
+        score: 79,
+        why: ["DSA", "Node.js", "Git", "APIs"],
+        desc: "Build scalable APIs, work with databases, and follow clean coding practices in production systems."
+      }
+    ];
+
+    function getSavedJobs() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveJob(jobId) {
+      const saved = getSavedJobs();
+      if (!saved.includes(jobId)) {
+        saved.push(jobId);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        window.dispatchEvent(new Event("savedJobsUpdated"));
+      }
+    }
+
+    function isSaved(jobId) {
+      return getSavedJobs().includes(jobId);
+    }
+
+    function openModal(job) {
+      const modal = document.createElement("div");
+      modal.className = "modal-backdrop";
+
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-head">
+            <div>
+              <div style="font-weight:900; font-size:18px;">${job.title}</div>
+              <div class="muted">${job.company}</div>
+            </div>
+            <button class="modal-close" id="closeModal">✕</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="job-meta">
+              <span class="badge">${job.location}</span>
+              <span class="badge">${job.type}</span>
+              <span class="badge">Source: ${job.source}</span>
+              <span class="match-score">${job.score}% Match</span>
+            </div>
+
+            <div style="margin-top:14px;">
+              <h3 style="font-weight:900;">Why recommended</h3>
+              <div class="why-list">
+                ${job.why.map((s) => `<span class="why-chip">${s}</span>`).join("")}
+              </div>
+            </div>
+
+            <div style="margin-top:14px;">
+              <h3 style="font-weight:900;">Description</h3>
+              <p class="muted" style="margin-top:6px; line-height:1.6;">
+                ${job.desc}
+              </p>
+            </div>
+
+            <div class="row" style="margin-top:18px;">
+              <a class="btn btn-primary" href="./apply.html?id=${job.id}">
+                Apply Now
+              </a>
+
+              <button class="btn btn-outline" id="saveJobBtn">
+                ${isSaved(job.id) ? "Saved ✓" : "Save Job"}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      function close() {
+        modal.remove();
+      }
+
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) close();
+      });
+
+      modal.querySelector("#closeModal").addEventListener("click", close);
+
+      modal.querySelector("#saveJobBtn").addEventListener("click", () => {
+        saveJob(job.id);
+        close();
+        renderPage();
+      });
+    }
+
+    function renderPage() {
+      renderDashboardLayout({
+        active: "reco",
+        content: `
+          <h1 class="section-title">Recommendations</h1>
+          <p class="section-subtitle">
+            Top job recommendations based on your extracted skills (mock logic).
+          </p>
+
+          <div class="filter-bar">
+            <input class="input" id="searchReco"
+              placeholder="Search title / company..."
+              style="flex:1; min-width:240px;" />
+
+            <select class="select" id="minScore">
+              <option value="0">All Matches</option>
+              <option value="70">70%+</option>
+              <option value="80">80%+</option>
+              <option value="90">90%+</option>
+            </select>
+
+            <div class="badge" id="recoCount">0 jobs</div>
+          </div>
+
+          <div class="jobs-grid" id="recoGrid"></div>
+        `
+      });
+
+      const recoGrid = document.getElementById("recoGrid");
+      const searchReco = document.getElementById("searchReco");
+      const minScore = document.getElementById("minScore");
+      const recoCount = document.getElementById("recoCount");
+
+      function renderList(list) {
+        recoCount.textContent = `${list.length} jobs`;
+
+        recoGrid.innerHTML = list.map((job) => {
+          const saved = isSaved(job.id);
+
+          return `
+            <div class="job-card">
+              <div class="job-left" style="cursor:pointer;" data-open="${job.id}">
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                  <div class="job-title">${job.title}</div>
+                  <span class="match-score">${job.score}% Match</span>
+                </div>
+
+                <div class="job-company">${job.company}</div>
+
+                <div class="job-meta">
+                  <span class="badge">${job.location}</span>
+                  <span class="badge">${job.type}</span>
+                  <span class="badge">Source: ${job.source}</span>
+                </div>
+
+                <div class="why-list">
+                  ${job.why.slice(0, 4).map((s) => `<span class="why-chip">${s}</span>`).join("")}
+                  ${job.why.length > 4 ? `<span class="why-chip">+${job.why.length - 4} more</span>` : ""}
+                </div>
+
+                <div class="job-desc">${job.desc}</div>
+              </div>
+
+              <div class="job-actions">
+                <a class="btn btn-primary" href="./apply.html?id=${job.id}">
+                  Apply
+                </a>
+
+                <button class="btn btn-outline" data-save="${job.id}">
+                  ${saved ? "Saved ✓" : "Save"}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        // Save button
+        recoGrid.querySelectorAll("[data-save]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const id = btn.getAttribute("data-save");
+            saveJob(id);
+            renderPage();
+          });
+        });
+
+        // Open modal
+        recoGrid.querySelectorAll("[data-open]").forEach((el) => {
+          el.addEventListener("click", () => {
+            const id = el.getAttribute("data-open");
+            const job = recommendations.find((j) => j.id === id);
+            if (job) openModal(job);
+          });
+        });
+      }
+
+      function applyFilters() {
+        const q = searchReco.value.trim().toLowerCase();
+        const scoreMin = parseInt(minScore.value, 10);
+
+        const filtered = recommendations.filter((j) => {
+          const matchText =
+            j.title.toLowerCase().includes(q) ||
+            j.company.toLowerCase().includes(q);
+
+          const matchScore = j.score >= scoreMin;
+
+          return matchText && matchScore;
+        });
+
+        renderList(filtered);
+      }
+
+      searchReco.addEventListener("input", applyFilters);
+      minScore.addEventListener("change", applyFilters);
+
+      applyFilters();
+    }
+
+    renderPage();
+  </script>
+</body>
+</html>
+
+<!-- week3 -->
