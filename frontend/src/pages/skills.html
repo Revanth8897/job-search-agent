@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Skills | Job Agent</title>
+
+  <!-- FIX: correct css file name -->
   <link rel="stylesheet" href="../../public/style.css" />
 </head>
 <body>
@@ -15,33 +17,149 @@
 
     requireAuth();
 
-    const mockSkills = [
-      "JavaScript",
-      "HTML",
-      "CSS",
-      "React",
-      "Node.js",
-      "SQL",
-      "Git",
-      "REST API",
-      "Tailwind"
+    const skills = [
+      "JavaScript", "HTML", "CSS", "React", "Node.js",
+      "SQL", "Git", "REST API", "Tailwind", "DSA",
+      "MongoDB", "Express.js"
     ];
 
     renderDashboardLayout({
       active: "skills",
       content: `
-        <h1 style="font-size:28px; font-weight:900;">Extracted Skills</h1>
-        <p class="muted" style="margin-top:6px;">
-          Week 2 UI: shows extracted skills from resume.
+        <h1 class="section-title">Extracted Skills</h1>
+        <p class="section-subtitle">
+          These are skills extracted from your resume. You can remove wrong ones or add missing ones.
         </p>
 
         <div class="card" style="margin-top:18px;">
-          <h2 style="font-weight:900;">Skills Found</h2>
-          <div class="skills-wrap">
-            ${mockSkills.map((s) => `<span class="skill-chip">${s}</span>`).join("")}
+          <div class="skill-toolbar">
+            <input class="input skill-search" id="skillSearch" placeholder="Search skill..." />
+
+            <input
+              class="input"
+              id="newSkill"
+              placeholder="Add skill manually (ex: Python)"
+              style="flex:1; min-width:220px;"
+            />
+
+            <button class="btn btn-outline" id="addSkillBtn" type="button">Add</button>
+            <button class="btn btn-outline" id="resetBtn" type="button">Reset</button>
+
+            <button class="btn btn-primary" id="matchBtn" type="button">
+              Find Matching Jobs
+            </button>
           </div>
+
+          <div class="hr"></div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <h2 style="font-weight:900;">Skills Found</h2>
+            <span class="badge" id="skillCount">0 skills</span>
+          </div>
+
+          <div class="skills-wrap" id="skillsWrap"></div>
         </div>
       `
+    });
+
+    const skillsWrap = document.getElementById("skillsWrap");
+    const skillSearch = document.getElementById("skillSearch");
+    const resetBtn = document.getElementById("resetBtn");
+    const matchBtn = document.getElementById("matchBtn");
+    const newSkill = document.getElementById("newSkill");
+    const addSkillBtn = document.getElementById("addSkillBtn");
+    const skillCount = document.getElementById("skillCount");
+
+    let currentSkills = [...skills];
+
+    function updateCount() {
+      skillCount.textContent = `${currentSkills.length} skills`;
+    }
+
+    function render(list) {
+      skillsWrap.innerHTML = list.map((s) => `
+        <span class="skill-chip">
+          ${s}
+          <button data-skill="${s}" title="Remove">✕</button>
+        </span>
+      `).join("");
+
+      // Remove skill
+      skillsWrap.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const skill = btn.getAttribute("data-skill");
+          currentSkills = currentSkills.filter((x) => x !== skill);
+
+          // Re-render using current search filter
+          const q = skillSearch.value.trim().toLowerCase();
+          const filtered = q
+            ? currentSkills.filter((s) => s.toLowerCase().includes(q))
+            : currentSkills;
+
+          render(filtered);
+          updateCount();
+        });
+      });
+    }
+
+    // Initial render
+    render(currentSkills);
+    updateCount();
+
+    skillSearch.addEventListener("input", () => {
+      const q = skillSearch.value.trim().toLowerCase();
+      const filtered = currentSkills.filter((s) => s.toLowerCase().includes(q));
+      render(filtered);
+    });
+
+    function addSkill() {
+      const s = newSkill.value.trim();
+      if (!s) return;
+
+      const exists = currentSkills.some(x => x.toLowerCase() === s.toLowerCase());
+      if (exists) {
+        alert("Skill already exists.");
+        return;
+      }
+
+      currentSkills.unshift(s);
+      newSkill.value = "";
+      skillSearch.value = "";
+
+      render(currentSkills);
+      updateCount();
+    }
+
+    addSkillBtn.addEventListener("click", addSkill);
+
+    // NEW: Add with Enter key (impress guide)
+    newSkill.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addSkill();
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      skillSearch.value = "";
+      newSkill.value = "";
+      currentSkills = [...skills];
+      render(currentSkills);
+      updateCount();
+    });
+
+    matchBtn.addEventListener("click", async () => {
+      matchBtn.disabled = true;
+      matchBtn.classList.add("btn-loading");
+      matchBtn.innerHTML = `<span class="spinner"></span> Matching...`;
+
+      await new Promise((r) => setTimeout(r, 1000));
+
+      matchBtn.disabled = false;
+      matchBtn.classList.remove("btn-loading");
+      matchBtn.innerHTML = "Find Matching Jobs";
+
+      window.location.href = "./jobs.html";
     });
   </script>
 </body>

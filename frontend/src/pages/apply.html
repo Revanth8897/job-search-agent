@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apply | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    const TRACKING_KEY = "tracking_jobs";
+
+    // Same mock list as recommendations (IDs must match)
+    const jobs = [
+      {
+        id: "rec1",
+        title: "Frontend Developer (React)",
+        company: "Google",
+        location: "Remote",
+        type: "Full-time",
+        source: "Indeed",
+        desc: "Work on high performance UI systems, build reusable components, and collaborate with product + design."
+      },
+      {
+        id: "rec2",
+        title: "Data Analyst Intern",
+        company: "Microsoft",
+        location: "Hyderabad",
+        type: "Internship",
+        source: "LinkedIn",
+        desc: "Analyze business datasets, build dashboards, and support product decisions with insights."
+      },
+      {
+        id: "rec3",
+        title: "Junior Software Engineer",
+        company: "Amazon",
+        location: "Bangalore",
+        type: "Full-time",
+        source: "Naukri",
+        desc: "Build scalable APIs, work with databases, and follow clean coding practices in production systems."
+      }
+    ];
+
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function getTracking() {
+      try {
+        return JSON.parse(localStorage.getItem(TRACKING_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function setTracking(list) {
+      localStorage.setItem(TRACKING_KEY, JSON.stringify(list));
+    }
+
+    function upsertTracking(job, data) {
+      const list = getTracking();
+
+      const existingIndex = list.findIndex((x) => x.id === job.id);
+
+      const record = {
+        id: job.id,
+        title: job.title,
+        company: job.company,
+        location: job.location,
+        type: job.type,
+        source: job.source,
+
+        status: "Applied",
+        appliedAt: new Date().toISOString(),
+        coverLetter: data.coverLetter || "",
+        notes: data.notes || ""
+      };
+
+      if (existingIndex === -1) {
+        list.unshift(record);
+      } else {
+        list[existingIndex] = { ...list[existingIndex], ...record };
+      }
+
+      setTracking(list);
+    }
+
+    const jobId = getQueryParam("id");
+    const job = jobs.find((j) => j.id === jobId);
+
+    if (!job) {
+      renderDashboardLayout({
+        active: "reco",
+        content: `
+          <h1 class="section-title">Apply</h1>
+          <p class="section-subtitle">Job not found.</p>
+
+          <div class="card" style="margin-top:18px;">
+            <p class="muted">Go back to Recommendations page and try again.</p>
+            <div class="row">
+              <a class="btn btn-primary" href="./recommendations.html">Back</a>
+            </div>
+          </div>
+        `
+      });
+    } else {
+      renderDashboardLayout({
+        active: "reco",
+        content: `
+          <h1 class="section-title">Apply</h1>
+          <p class="section-subtitle">
+            Submit your application details (mock UI). This will be saved in Tracking.
+          </p>
+
+          <div class="grid-3" style="grid-template-columns: 1fr; margin-top:18px;">
+            <div class="card">
+              <h2 style="font-weight:900;">Job Details</h2>
+
+              <div style="margin-top:12px;">
+                <div style="font-weight:900; font-size:18px;">${job.title}</div>
+                <div class="muted" style="margin-top:4px;">${job.company}</div>
+
+                <div class="job-meta" style="margin-top:12px;">
+                  <span class="badge">${job.location}</span>
+                  <span class="badge">${job.type}</span>
+                  <span class="badge">Source: ${job.source}</span>
+                </div>
+
+                <div style="margin-top:14px;">
+                  <h3 style="font-weight:900;">Description</h3>
+                  <p class="muted" style="margin-top:6px; line-height:1.6;">
+                    ${job.desc}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:18px;">
+              <h2 style="font-weight:900;">Application Form</h2>
+
+              <form id="applyForm" style="margin-top:14px;">
+                <label class="label">Cover Letter (optional)</label>
+                <textarea
+                  class="textarea"
+                  id="coverLetter"
+                  placeholder="Write a short cover letter..."
+                ></textarea>
+
+                <div style="margin-top:14px;">
+                  <label class="label">Notes (optional)</label>
+                  <textarea
+                    class="textarea"
+                    id="notes"
+                    placeholder="Add notes like: recruiter name, job link, salary, etc..."
+                  ></textarea>
+                </div>
+
+                <div class="row" style="margin-top:18px;">
+                  <button class="btn btn-primary" id="submitBtn" type="submit" style="width:auto;">
+                    Submit Application
+                  </button>
+
+                  <a class="btn btn-outline" href="./recommendations.html" style="width:auto;">
+                    Cancel
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        `
+      });
+
+      const form = document.getElementById("applyForm");
+      const submitBtn = document.getElementById("submitBtn");
+      const coverLetter = document.getElementById("coverLetter");
+      const notes = document.getElementById("notes");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add("btn-loading");
+        submitBtn.innerHTML = `<span class="spinner"></span> Submitting...`;
+
+        await new Promise((r) => setTimeout(r, 900));
+
+        upsertTracking(job, {
+          coverLetter: coverLetter.value.trim(),
+          notes: notes.value.trim()
+        });
+
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("btn-loading");
+        submitBtn.innerHTML = "Submit Application";
+
+        alert("Application saved! Redirecting to Tracking page...");
+
+        window.location.href = "./tracking.html";
+      });
+    }
+  </script>
+</body>
+</html>
+
+<!-- week3 -->

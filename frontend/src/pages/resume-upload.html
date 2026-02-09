@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resume Upload | Job Agent</title>
+
+  <!-- FIX: correct css file name -->
   <link rel="stylesheet" href="../../public/style.css" />
 </head>
 <body>
@@ -18,67 +20,148 @@
     renderDashboardLayout({
       active: "resume",
       content: `
-        <h1 style="font-size:28px; font-weight:900;">Resume Upload</h1>
-        <p class="muted" style="margin-top:6px;">
-          Upload your resume (PDF/DOCX). Week 2 UI only.
+        <h1 class="section-title">Resume Upload</h1>
+        <p class="section-subtitle">
+          Upload your resume. We’ll extract skills and match jobs automatically.
         </p>
 
+        <!-- NEW: Step progress (impress guide) -->
+        <div class="steps">
+          <div class="step active" id="step1"><span>1</span> Upload</div>
+          <div class="step" id="step2"><span>2</span> Extract Skills</div>
+          <div class="step" id="step3"><span>3</span> Match Jobs</div>
+        </div>
+
         <div class="card" style="margin-top:18px;">
-          <div class="upload-box" id="uploadBox">
-            <p class="upload-title">Drag & Drop Resume Here</p>
-            <p class="upload-sub">or click to select file</p>
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+
+            <div class="upload-title">Drop your resume here</div>
+            <div class="upload-sub">PDF / DOCX (max 5MB)</div>
 
             <input type="file" id="fileInput" accept=".pdf,.doc,.docx" hidden />
-            <p class="file-name" id="fileName"></p>
 
-            <button class="btn btn-primary" id="uploadBtn" style="margin-top:16px;">
-              Upload Resume
-            </button>
+            <div class="row" style="justify-content:center; margin-top:16px;">
+              <button class="btn btn-outline" id="chooseBtn" type="button">
+                Choose File
+              </button>
+              <button class="btn btn-primary" id="uploadBtn" type="button">
+                Upload & Extract Skills
+              </button>
+            </div>
+
+            <div id="fileInfo"></div>
+
+            <div id="progressWrap" style="display:none;">
+              <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+              </div>
+              <p class="muted" style="margin-top:8px; font-size:13px;" id="progressText">
+                Uploading...
+              </p>
+            </div>
           </div>
         </div>
       `
     });
 
-    const uploadBox = document.getElementById("uploadBox");
+    const dropzone = document.getElementById("dropzone");
     const fileInput = document.getElementById("fileInput");
-    const fileName = document.getElementById("fileName");
+    const chooseBtn = document.getElementById("chooseBtn");
     const uploadBtn = document.getElementById("uploadBtn");
+    const fileInfo = document.getElementById("fileInfo");
 
-    uploadBox.addEventListener("click", () => fileInput.click());
+    const progressWrap = document.getElementById("progressWrap");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
 
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files[0];
-      if (file) fileName.textContent = `Selected: ${file.name}`;
-    });
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const step3 = document.getElementById("step3");
 
-    // Drag drop UI
-    uploadBox.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      uploadBox.classList.add("dragover");
-    });
+    let selectedFile = null;
 
-    uploadBox.addEventListener("dragleave", () => {
-      uploadBox.classList.remove("dragover");
-    });
+    function formatSize(bytes) {
+      const mb = bytes / (1024 * 1024);
+      return mb.toFixed(2) + " MB";
+    }
 
-    uploadBox.addEventListener("drop", (e) => {
-      e.preventDefault();
-      uploadBox.classList.remove("dragover");
+    function resetSteps() {
+      step1.classList.add("active");
+      step2.classList.remove("active");
+      step3.classList.remove("active");
+    }
 
-      const file = e.dataTransfer.files[0];
+    function setFile(file) {
       if (!file) return;
 
-      fileInput.files = e.dataTransfer.files;
-      fileName.textContent = `Selected: ${file.name}`;
+      resetSteps();
+
+      // Validation
+      const allowed = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ];
+
+      if (!allowed.includes(file.type)) {
+        alert("Only PDF or DOCX allowed.");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File too large. Max 5MB.");
+        return;
+      }
+
+      selectedFile = file;
+
+      fileInfo.innerHTML = `
+        <div class="file-pill">
+          📄 ${file.name}
+          <span>${formatSize(file.size)}</span>
+        </div>
+      `;
+    }
+
+    chooseBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fileInput.click();
     });
 
-    // Mock upload
+    fileInput.addEventListener("change", () => {
+      setFile(fileInput.files[0]);
+    });
+
+    // Drag UI
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("dragover");
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      setFile(e.dataTransfer.files[0]);
+    });
+
+    // Mock upload + progress
     uploadBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
 
-      const file = fileInput.files[0];
-      if (!file) {
-        alert("Please select a resume first.");
+      if (!selectedFile) {
+        alert("Please choose a resume first.");
         return;
       }
 
@@ -86,13 +169,36 @@
       uploadBtn.classList.add("btn-loading");
       uploadBtn.innerHTML = `<span class="spinner"></span> Uploading...`;
 
-      await new Promise((r) => setTimeout(r, 1200));
+      progressWrap.style.display = "block";
+      progressBar.style.width = "0%";
+      progressText.textContent = "Uploading...";
 
-      uploadBtn.disabled = false;
-      uploadBtn.classList.remove("btn-loading");
-      uploadBtn.innerHTML = "Upload Resume";
+      // Fake progress
+      let progress = 0;
+      const timer = setInterval(() => {
+        progress += Math.floor(Math.random() * 12) + 6;
+        if (progress > 100) progress = 100;
+        progressBar.style.width = progress + "%";
+      }, 180);
 
-      alert("Resume uploaded successfully (mock).");
+      await new Promise((r) => setTimeout(r, 1600));
+      clearInterval(timer);
+
+      progressBar.style.width = "100%";
+      progressText.textContent = "Upload complete. Extracting skills...";
+      step2.classList.add("active");
+
+      await new Promise((r) => setTimeout(r, 900));
+
+      progressText.textContent = "Skills extracted. Matching jobs...";
+      step3.classList.add("active");
+
+      await new Promise((r) => setTimeout(r, 800));
+
+      progressText.textContent = "Done! Redirecting to Skills page...";
+      await new Promise((r) => setTimeout(r, 700));
+
+      window.location.href = "./skills.html";
     });
   </script>
 </body>

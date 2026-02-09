@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jobs | Job Agent</title>
+
+  <!-- FIX: correct css file name -->
   <link rel="stylesheet" href="../../public/style.css" />
 </head>
 <body>
@@ -15,41 +17,183 @@
 
     requireAuth();
 
-    const mockJobs = [
+    const jobs = [
       {
+        id: "job1",
         title: "Frontend Developer",
         company: "Google",
         location: "Remote",
         type: "Full-time",
-        source: "Indeed"
+        source: "Indeed",
+        desc: "Build modern UI, optimize performance, and collaborate with design + backend teams."
       },
       {
+        id: "job2",
         title: "Data Analyst Intern",
         company: "Microsoft",
         location: "Hyderabad",
         type: "Internship",
-        source: "LinkedIn"
+        source: "LinkedIn",
+        desc: "Analyze datasets, build dashboards, and support product decisions using data."
       },
       {
+        id: "job3",
         title: "Backend Engineer",
         company: "Amazon",
         location: "Bangalore",
         type: "Full-time",
-        source: "Naukri"
+        source: "Naukri",
+        desc: "Work on APIs, databases, and scalable backend systems with clean architecture."
       }
     ];
 
     renderDashboardLayout({
       active: "jobs",
       content: `
-        <h1 style="font-size:28px; font-weight:900;">Job Matches</h1>
-        <p class="muted" style="margin-top:6px;">
-          Week 2 UI: job cards (mock data).
+        <h1 class="section-title">Job Matches</h1>
+        <p class="section-subtitle">
+          These jobs are matched based on your extracted skills (mock data).
         </p>
 
-        <div class="jobs-grid">
-          ${mockJobs.map((job) => `
-            <div class="job-card">
+        <div class="filter-bar">
+          <input
+            class="input"
+            id="search"
+            placeholder="Search job title / company..."
+            style="flex:1; min-width:240px;"
+          />
+
+          <select class="select" id="typeFilter">
+            <option value="all">All Types</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Internship">Internship</option>
+          </select>
+
+          <select class="select" id="sourceFilter">
+            <option value="all">All Sources</option>
+            <option value="Indeed">Indeed</option>
+            <option value="LinkedIn">LinkedIn</option>
+            <option value="Naukri">Naukri</option>
+          </select>
+
+          <div class="badge" id="jobCount">0 jobs</div>
+        </div>
+
+        <div class="jobs-grid" id="jobsGrid"></div>
+      `
+    });
+
+    const jobsGrid = document.getElementById("jobsGrid");
+    const search = document.getElementById("search");
+    const typeFilter = document.getElementById("typeFilter");
+    const sourceFilter = document.getElementById("sourceFilter");
+    const jobCount = document.getElementById("jobCount");
+
+    // -----------------------------
+    // Saved Jobs (localStorage)
+    // -----------------------------
+    const STORAGE_KEY = "saved_jobs";
+
+    function getSavedJobs() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveJobToStorage(jobId) {
+      const saved = getSavedJobs();
+      if (!saved.includes(jobId)) {
+        saved.push(jobId);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+        // 🔥 notify sidebar
+        window.dispatchEvent(new Event("savedJobsUpdated"));
+      }
+    }
+
+    function isJobSaved(jobId) {
+      return getSavedJobs().includes(jobId);
+    }
+
+    // -----------------------------
+    // Modal
+    // -----------------------------
+    function openModal(job) {
+      const modal = document.createElement("div");
+      modal.className = "modal-backdrop";
+
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-head">
+            <div>
+              <div style="font-weight:900; font-size:18px;">${job.title}</div>
+              <div class="muted">${job.company}</div>
+            </div>
+            <button class="modal-close" id="closeModal">✕</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="job-meta">
+              <span class="badge">${job.location}</span>
+              <span class="badge">${job.type}</span>
+              <span class="badge">Source: ${job.source}</span>
+            </div>
+
+            <div style="margin-top:14px;">
+              <h3 style="font-weight:900;">Description</h3>
+              <p class="muted" style="margin-top:6px; line-height:1.6;">
+                ${job.desc}
+              </p>
+            </div>
+
+            <div class="row" style="margin-top:18px;">
+              <button class="btn btn-primary" id="applyNow">Apply Now</button>
+              <button class="btn btn-outline" id="saveJob">
+                ${isJobSaved(job.id) ? "Saved ✓" : "Save Job"}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      function close() {
+        modal.remove();
+      }
+
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) close();
+      });
+
+      modal.querySelector("#closeModal").addEventListener("click", close);
+
+      modal.querySelector("#applyNow").addEventListener("click", () => {
+        alert(`(Mock) Applying for: ${job.title}`);
+        close();
+      });
+
+      modal.querySelector("#saveJob").addEventListener("click", () => {
+        saveJobToStorage(job.id);
+        close();
+        applyFilters();
+      });
+    }
+
+    // -----------------------------
+    // Render Jobs
+    // -----------------------------
+    function render(list) {
+      jobCount.textContent = `${list.length} jobs`;
+
+      jobsGrid.innerHTML = list.map((job) => {
+        const saved = isJobSaved(job.id);
+
+        return `
+          <div class="job-card">
+            <div class="job-left" style="cursor:pointer;" data-open="${job.id}">
               <div class="job-title">${job.title}</div>
               <div class="job-company">${job.company}</div>
 
@@ -59,14 +203,91 @@
                 <span class="badge">Source: ${job.source}</span>
               </div>
 
-              <button class="btn btn-primary" style="margin-top:14px;">
-                View Job
+              <div class="job-desc">${job.desc}</div>
+            </div>
+
+            <div class="job-actions">
+              <button class="btn btn-primary" data-action="apply" data-id="${job.id}">
+                Apply
+              </button>
+
+              <button class="btn btn-outline" data-action="save" data-id="${job.id}">
+                ${saved ? "Saved ✓" : "Save"}
               </button>
             </div>
-          `).join("")}
-        </div>
-      `
-    });
+          </div>
+        `;
+      }).join("");
+
+      // Apply + Save buttons
+      jobsGrid.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+
+          const action = btn.getAttribute("data-action");
+          const id = btn.getAttribute("data-id");
+          const job = jobs.find((j) => j.id === id);
+
+          if (!job) return;
+
+          if (action === "apply") {
+            btn.disabled = true;
+            btn.classList.add("btn-loading");
+            btn.innerHTML = `<span class="spinner"></span> Opening...`;
+
+            await new Promise((r) => setTimeout(r, 700));
+
+            btn.disabled = false;
+            btn.classList.remove("btn-loading");
+            btn.innerHTML = "Apply";
+
+            alert(`(Mock) Redirecting to apply page for: ${job.title}`);
+          }
+
+          if (action === "save") {
+            saveJobToStorage(job.id);
+            applyFilters();
+          }
+        });
+      });
+
+      // Card click -> open modal
+      jobsGrid.querySelectorAll("[data-open]").forEach((el) => {
+        el.addEventListener("click", () => {
+          const id = el.getAttribute("data-open");
+          const job = jobs.find((j) => j.id === id);
+          if (job) openModal(job);
+        });
+      });
+    }
+
+    // -----------------------------
+    // Filters
+    // -----------------------------
+    function applyFilters() {
+      const q = search.value.trim().toLowerCase();
+      const type = typeFilter.value;
+      const source = sourceFilter.value;
+
+      const filtered = jobs.filter((j) => {
+        const matchText =
+          j.title.toLowerCase().includes(q) ||
+          j.company.toLowerCase().includes(q);
+
+        const matchType = type === "all" ? true : j.type === type;
+        const matchSource = source === "all" ? true : j.source === source;
+
+        return matchText && matchType && matchSource;
+      });
+
+      render(filtered);
+    }
+
+    search.addEventListener("input", applyFilters);
+    typeFilter.addEventListener("change", applyFilters);
+    sourceFilter.addEventListener("change", applyFilters);
+
+    render(jobs);
   </script>
 </body>
 </html>
