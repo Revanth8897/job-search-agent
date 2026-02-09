@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Job Agent</title>
+
+  <!-- FIX: correct css file name -->
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { requireAuth } from "../utils/protect.js";
+    import { renderDashboardLayout } from "../components/layout.js";
+
+    requireAuth();
+
+    // Mock progress (Week 2 UI)
+    // You can later replace these with real backend status
+    const resumeUploaded = true;
+    const skillsExtracted = true;
+    const jobsMatched = true;
+
+    // Stats (mock)
+    const skillCount = 12;
+    const jobCount = 3;
+
+    // Saved jobs from localStorage
+    const savedJobs = JSON.parse(localStorage.getItem("saved_jobs") || "[]");
+    const savedCount = savedJobs.length;
+
+    renderDashboardLayout({
+      active: "home",
+      content: `
+        <h1 class="section-title">Dashboard</h1>
+        <p class="section-subtitle">
+          Welcome to Job Search Agent. Upload resume → extract skills → get job matches.
+        </p>
+
+        <!-- Quick Actions -->
+        <div class="card" style="margin-top:18px;">
+          <h2 style="font-weight:900;">Quick Actions</h2>
+
+          <div class="row" style="margin-top:14px; flex-wrap:wrap;">
+            <a class="btn btn-primary" href="./resume-upload.html">Upload Resume</a>
+            <a class="btn btn-outline" href="./skills.html">View Skills</a>
+            <a class="btn btn-outline" href="./jobs.html">View Jobs</a>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="card" style="margin-top:18px;">
+          <h2 style="font-weight:900;">Progress Overview</h2>
+
+          <div class="steps" style="margin-top:14px;">
+            <div class="step ${resumeUploaded ? "active" : ""}">
+              <span>${resumeUploaded ? "✓" : "1"}</span>
+              Resume Uploaded
+            </div>
+
+            <div class="step ${skillsExtracted ? "active" : ""}">
+              <span>${skillsExtracted ? "✓" : "2"}</span>
+              Skills Extracted
+            </div>
+
+            <div class="step ${jobsMatched ? "active" : ""}">
+              <span>${jobsMatched ? "✓" : "3"}</span>
+              Jobs Matched
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid-3" style="margin-top:18px;">
+          <div class="card">
+            <h3 style="font-weight:900;">Skills Found</h3>
+            <p style="font-size:34px; font-weight:900; margin-top:10px;">
+              ${skillCount}
+            </p>
+            <p class="muted">Extracted from resume</p>
+          </div>
+
+          <div class="card">
+            <h3 style="font-weight:900;">Jobs Matched</h3>
+            <p style="font-size:34px; font-weight:900; margin-top:10px;">
+              ${jobCount}
+            </p>
+            <p class="muted">From job platforms</p>
+          </div>
+
+          <div class="card">
+            <h3 style="font-weight:900;">Saved Jobs</h3>
+            <p style="font-size:34px; font-weight:900; margin-top:10px;">
+              ${savedCount}
+            </p>
+            <p class="muted">Stored locally</p>
+          </div>
+        </div>
+
+        <!-- Week Roadmap -->
+        <div class="card" style="margin-top:18px;">
+          <h2 style="font-weight:900;">Project Roadmap</h2>
+
+          <div style="margin-top:12px; line-height:1.8;">
+            <p><strong>Week 1:</strong> Auth pages + Dashboard layout + Wireframes ✅</p>
+            <p><strong>Week 2:</strong> Resume Upload UI + Skill Display UI + Job Cards UI ✅</p>
+            <p><strong>Week 3:</strong> Recommendations + Apply Flow + Tracking ⏳</p>
+            <p><strong>Week 4:</strong> Polish + Deployment + Admin ⏳</p>
+          </div>
+        </div>
+      `
+    });
+  </script>
+</body>
+</html>

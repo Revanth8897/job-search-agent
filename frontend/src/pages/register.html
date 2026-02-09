@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register | Job Agent</title>
+  <link rel="stylesheet" href="../../public/style.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="card auth-card page-animate">
+      <h1 class="auth-title">Create account</h1>
+      <p class="muted" style="margin-bottom:18px;">
+        Start using Job Search Agent
+      </p>
+
+      <form id="registerForm">
+        <div style="margin-bottom:14px;">
+          <label class="label">Name</label>
+          <input
+            class="input"
+            type="text"
+            id="name"
+            placeholder="Your name"
+            required
+          />
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label class="label">Email</label>
+          <input
+            class="input"
+            type="email"
+            id="email"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label class="label">Password</label>
+
+          <div style="position:relative;">
+            <input
+              class="input"
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              required
+              style="padding-right:46px;"
+            />
+
+            <button
+              type="button"
+              id="togglePassword"
+              style="
+                position:absolute;
+                right:10px;
+                top:50%;
+                transform:translateY(-50%);
+                border:none;
+                background:transparent;
+                cursor:pointer;
+                width:34px;
+                height:34px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                border-radius:10px;
+              "
+              aria-label="Show password"
+            >
+              <!-- Eye OPEN -->
+              <svg
+                id="eyeOpen"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#0f172a"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+
+              <!-- Eye CLOSED -->
+              <svg
+                id="eyeClosed"
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#0f172a"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="display:none;"
+              >
+                <path d="M10.733 5.08A10.744 10.744 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                <line x1="2" x2="22" y1="2" y2="22"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p id="error" class="error" style="display:none;"></p>
+
+        <button class="btn btn-primary" type="submit" id="registerBtn">
+          Register
+        </button>
+      </form>
+
+      <p style="margin-top:16px; font-size:14px;">
+        Already have an account?
+        <a class="link" href="./login.html">Login</a>
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { authApi } from "../api/authApi.js";
+    import { authStore } from "../context/authStore.js";
+    import { isValidEmail, minLength } from "../utils/validator.js";
+
+    // If already logged in, go dashboard
+    if (authStore.getUser()) window.location.href = "./dashboard.html";
+
+    const form = document.getElementById("registerForm");
+    const registerBtn = document.getElementById("registerBtn");
+    const errorEl = document.getElementById("error");
+
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+
+    // Eye toggle
+    const toggleBtn = document.getElementById("togglePassword");
+    const eyeOpen = document.getElementById("eyeOpen");
+    const eyeClosed = document.getElementById("eyeClosed");
+
+    toggleBtn.addEventListener("click", () => {
+      const hidden = passwordInput.type === "password";
+      passwordInput.type = hidden ? "text" : "password";
+      eyeOpen.style.display = hidden ? "none" : "block";
+      eyeClosed.style.display = hidden ? "block" : "none";
+    });
+
+    function showFieldError(inputEl, message) {
+      errorEl.textContent = message;
+      errorEl.style.display = "block";
+
+      inputEl.classList.add("input-error");
+
+      inputEl.style.animation = "none";
+      inputEl.offsetHeight;
+      inputEl.style.animation = null;
+    }
+
+    function clearErrors() {
+      errorEl.style.display = "none";
+      nameInput.classList.remove("input-error");
+      emailInput.classList.remove("input-error");
+      passwordInput.classList.remove("input-error");
+    }
+
+    nameInput.addEventListener("input", clearErrors);
+    emailInput.addEventListener("input", clearErrors);
+    passwordInput.addEventListener("input", clearErrors);
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearErrors();
+
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (!minLength(name, 2)) {
+        showFieldError(nameInput, "Name must be at least 2 characters.");
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        showFieldError(emailInput, "Enter a valid email.");
+        return;
+      }
+
+      if (!minLength(password, 6)) {
+        showFieldError(passwordInput, "Password must be at least 6 characters.");
+        return;
+      }
+
+      // Loading ON
+      registerBtn.disabled = true;
+      registerBtn.classList.add("btn-loading");
+      registerBtn.innerHTML = `<span class="spinner"></span> Creating account...`;
+
+      try {
+        await authApi.register({ name, email, password });
+
+        // Success -> login page
+        window.location.href = "./login.html";
+      } catch (err) {
+        showFieldError(emailInput, err?.message || "Registration failed.");
+      } finally {
+        // Loading OFF
+        registerBtn.disabled = false;
+        registerBtn.classList.remove("btn-loading");
+        registerBtn.innerHTML = "Register";
+      }
+    });
+  </script>
+</body>
+</html>
