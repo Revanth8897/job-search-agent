@@ -4,21 +4,24 @@ from app.db.session import get_db
 from app.models.job import Job
 from app.schemas.job import JobCreate, JobUpdate
 from app.core.deps import get_current_user
-from app.db.session import get_db
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
-@router.post("/", dependencies=[Depends(get_current_user)])
+@router.post("/")
 def create_job(
     job: JobCreate,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
+    job_data = job.dict()
+    job_data["skills"] = ",".join(job_data["skills"]) if job_data.get("skills") else None
+
     new_job = Job(
-        **job.dict(),
+        **job_data,
         recruiter_id=current_user.id
     )
+
     db.add(new_job)
     db.commit()
     db.refresh(new_job)
