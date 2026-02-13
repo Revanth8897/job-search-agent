@@ -6,7 +6,8 @@
   <title>Skills | Job Agent</title>
 
   <!-- FIX: correct css file name -->
-  <link rel="stylesheet" href="../../public/style.css" />
+  <link rel="stylesheet" href="../../public/style.css?v=4" />
+
 </head>
 <body>
   <div id="app"></div>
@@ -17,11 +18,29 @@
 
     requireAuth();
 
-    const skills = [
-      "JavaScript", "HTML", "CSS", "React", "Node.js",
-      "SQL", "Git", "REST API", "Tailwind", "DSA",
-      "MongoDB", "Express.js"
-    ];
+    const DEFAULT_SKILLS = [
+  "JavaScript",
+  "HTML",
+  "CSS",
+  "React",
+  "Git",
+  "SQL"
+];
+
+// Load extracted skills from resume-upload page
+let skills = [];
+
+try {
+  skills = JSON.parse(localStorage.getItem("extracted_skills") || "[]");
+} catch {
+  skills = [];
+}
+
+// If nothing found, fallback
+if (!Array.isArray(skills) || skills.length === 0) {
+  skills = [...DEFAULT_SKILLS];
+}
+
 
     renderDashboardLayout({
       active: "skills",
@@ -71,6 +90,10 @@
     const skillCount = document.getElementById("skillCount");
 
     let currentSkills = [...skills];
+    function saveSkillsToStorage() {
+  localStorage.setItem("extracted_skills", JSON.stringify(currentSkills));
+}
+
 
     function updateCount() {
       skillCount.textContent = `${currentSkills.length} skills`;
@@ -89,6 +112,7 @@
         btn.addEventListener("click", () => {
           const skill = btn.getAttribute("data-skill");
           currentSkills = currentSkills.filter((x) => x !== skill);
+          saveSkillsToStorage();
 
           // Re-render using current search filter
           const q = skillSearch.value.trim().toLowerCase();
@@ -123,6 +147,7 @@
       }
 
       currentSkills.unshift(s);
+      saveSkillsToStorage();
       newSkill.value = "";
       skillSearch.value = "";
 
@@ -144,6 +169,7 @@
       skillSearch.value = "";
       newSkill.value = "";
       currentSkills = [...skills];
+      saveSkillsToStorage();
       render(currentSkills);
       updateCount();
     });

@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard | Job Agent</title>
-
-  <!-- FIX: correct css file name -->
-  <link rel="stylesheet" href="../../public/style.css" />
+  <link rel="stylesheet" href="../../public/style.css?v=4" />
 </head>
 <body>
   <div id="app"></div>
@@ -17,42 +15,74 @@
 
     requireAuth();
 
-    // Mock progress (Week 2 UI)
-    // You can later replace these with real backend status
+    // -----------------------------
+    // Mock data (Week 4 polish)
+    // -----------------------------
     const resumeUploaded = true;
     const skillsExtracted = true;
     const jobsMatched = true;
 
-    // Stats (mock)
+    // You can later replace these with backend values
     const skillCount = 12;
     const jobCount = 3;
 
-    // Saved jobs from localStorage
     const savedJobs = JSON.parse(localStorage.getItem("saved_jobs") || "[]");
     const savedCount = savedJobs.length;
 
+    const trackingJobs = JSON.parse(localStorage.getItem("tracking_jobs") || "[]");
+    const trackingCount = trackingJobs.length;
+
+    function getStatusCount(status) {
+      return trackingJobs.filter((x) => x.status === status).length;
+    }
+
+    const appliedCount = getStatusCount("Applied");
+    const interviewCount = getStatusCount("Interview");
+
+    // -----------------------------
+    // Render
+    // -----------------------------
     renderDashboardLayout({
       active: "home",
       content: `
-        <h1 class="section-title">Dashboard</h1>
-        <p class="section-subtitle">
-          Welcome to Job Search Agent. Upload resume → extract skills → get job matches.
-        </p>
+        <div class="dash-hero">
+          <div>
+            <h1 class="dash-title">Welcome back 👋</h1>
+            <p class="dash-sub">
+              Your personal job agent is ready. Upload resume → extract skills → get job matches.
+            </p>
 
-        <!-- Quick Actions -->
-        <div class="card" style="margin-top:18px;">
-          <h2 style="font-weight:900;">Quick Actions</h2>
+            <div class="dash-actions">
+              <a class="btn btn-primary" href="./resume-upload.html">Upload Resume</a>
+              <a class="btn btn-outline" href="./recommendations.html">Recommendations</a>
+              <a class="btn btn-outline" href="./tracking.html">Tracking</a>
+            </div>
+          </div>
 
-          <div class="row" style="margin-top:14px; flex-wrap:wrap;">
-            <a class="btn btn-primary" href="./resume-upload.html">Upload Resume</a>
-            <a class="btn btn-outline" href="./skills.html">View Skills</a>
-            <a class="btn btn-outline" href="./jobs.html">View Jobs</a>
+          <div class="dash-mini">
+            <div class="mini-card">
+              <div class="mini-label">Applied</div>
+              <div class="mini-value">${appliedCount}</div>
+            </div>
+
+            <div class="mini-card">
+              <div class="mini-label">Interviews</div>
+              <div class="mini-value">${interviewCount}</div>
+            </div>
+
+            <div class="mini-card">
+              <div class="mini-label">Saved</div>
+              <div class="mini-value">${savedCount}</div>
+            </div>
           </div>
         </div>
 
         <!-- Progress -->
         <div class="card" style="margin-top:18px;">
-          <h2 style="font-weight:900;">Progress Overview</h2>
+          <div class="dash-row-head">
+            <h2 style="font-weight:900;">Progress Overview</h2>
+            <span class="muted" style="font-weight:800;">Week 4 polish</span>
+          </div>
 
           <div class="steps" style="margin-top:14px;">
             <div class="step ${resumeUploaded ? "active" : ""}">
@@ -70,46 +100,123 @@
               Jobs Matched
             </div>
           </div>
+
+          <div class="hr"></div>
+
+          <div class="dash-progress-grid">
+            <div class="progress-card">
+              <div class="progress-title">Next best action</div>
+              <div class="progress-value">
+                ${
+                  !resumeUploaded
+                    ? "Upload your resume"
+                    : !skillsExtracted
+                      ? "Review extracted skills"
+                      : !jobsMatched
+                        ? "Find job matches"
+                        : "Start applying"
+                }
+              </div>
+              <p class="muted" style="margin-top:6px;">
+                We guide you step-by-step to keep your job search organized.
+              </p>
+            </div>
+
+            <div class="progress-card">
+              <div class="progress-title">Tracking jobs</div>
+              <div class="progress-value">${trackingCount}</div>
+              <p class="muted" style="margin-top:6px;">
+                Jobs you applied to (stored locally).
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Stats -->
-        <div class="grid-3" style="margin-top:18px;">
-          <div class="card">
-            <h3 style="font-weight:900;">Skills Found</h3>
-            <p style="font-size:34px; font-weight:900; margin-top:10px;">
-              ${skillCount}
-            </p>
-            <p class="muted">Extracted from resume</p>
+        <div class="dash-stats" style="margin-top:18px;">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Skills Found</div>
+              <span class="badge">Resume</span>
+            </div>
+            <div class="stat-value">${skillCount}</div>
+            <div class="muted">Extracted from your resume</div>
           </div>
 
-          <div class="card">
-            <h3 style="font-weight:900;">Jobs Matched</h3>
-            <p style="font-size:34px; font-weight:900; margin-top:10px;">
-              ${jobCount}
-            </p>
-            <p class="muted">From job platforms</p>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Jobs Matched</div>
+              <span class="badge">Platforms</span>
+            </div>
+            <div class="stat-value">${jobCount}</div>
+            <div class="muted">From job platforms</div>
           </div>
 
-          <div class="card">
-            <h3 style="font-weight:900;">Saved Jobs</h3>
-            <p style="font-size:34px; font-weight:900; margin-top:10px;">
-              ${savedCount}
-            </p>
-            <p class="muted">Stored locally</p>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Saved Jobs</div>
+              <span class="badge">Local</span>
+            </div>
+            <div class="stat-value">${savedCount}</div>
+            <div class="muted">Saved for later</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Tracking</div>
+              <span class="badge">Week 3</span>
+            </div>
+            <div class="stat-value">${trackingCount}</div>
+            <div class="muted">Applied / Interview / Offer</div>
           </div>
         </div>
 
-        <!-- Week Roadmap -->
+        <!-- Recent Activity -->
         <div class="card" style="margin-top:18px;">
-          <h2 style="font-weight:900;">Project Roadmap</h2>
-
-          <div style="margin-top:12px; line-height:1.8;">
-            <p><strong>Week 1:</strong> Auth pages + Dashboard layout + Wireframes ✅</p>
-            <p><strong>Week 2:</strong> Resume Upload UI + Skill Display UI + Job Cards UI ✅</p>
-            <p><strong>Week 3:</strong> Recommendations + Apply Flow + Tracking ⏳</p>
-            <p><strong>Week 4:</strong> Polish + Deployment + Admin ⏳</p>
+          <div class="dash-row-head">
+            <h2 style="font-weight:900;">Recent Activity</h2>
+            <a class="link" href="./tracking.html">View tracking →</a>
           </div>
+
+          ${
+            trackingJobs.length === 0
+              ? `
+                <div class="empty-state" style="margin-top:14px;">
+                  <div class="empty-icon">📌</div>
+                  <div>
+                    <h3 style="font-weight:900;">No activity yet</h3>
+                    <p class="muted" style="margin-top:6px;">
+                      Apply from Recommendations to start tracking your job applications.
+                    </p>
+                    <div class="row">
+                      <a class="btn btn-primary" href="./recommendations.html" style="width:auto;">
+                        Go to Recommendations
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `
+              : `
+                <div class="recent-list" style="margin-top:14px;">
+                  ${trackingJobs.slice(0, 4).map((job) => `
+                    <div class="recent-item">
+                      <div>
+                        <div style="font-weight:900;">${job.title}</div>
+                        <div class="muted" style="margin-top:4px;">
+                          ${job.company} • ${job.location || "-"}
+                        </div>
+                      </div>
+                      <span class="status-pill status-${(job.status || "Saved").toLowerCase()}">
+                        ${job.status || "Saved"}
+                      </span>
+                    </div>
+                  `).join("")}
+                </div>
+              `
+          }
         </div>
+
+       
       `
     });
   </script>
