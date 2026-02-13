@@ -60,10 +60,6 @@ export function renderSidebar(active = "home") {
             ${savedCount}
           </span>
         </a>
-
-        <a href="./wireframes.html" class="${active === "wireframes" ? "active" : ""}">
-          Wireframes
-        </a>
       </div>
     </aside>
   `;

@@ -6,7 +6,8 @@
   <title>Resume Upload | Job Agent</title>
 
   <!-- FIX: correct css file name -->
-  <link rel="stylesheet" href="../../public/style.css" />
+  <link rel="stylesheet" href="../../public/style.css?v=4" />
+
 </head>
 <body>
   <div id="app"></div>
@@ -198,7 +199,26 @@
       progressText.textContent = "Done! Redirecting to Skills page...";
       await new Promise((r) => setTimeout(r, 700));
 
-      window.location.href = "./skills.html";
+      // -----------------------------
+// MOCK SKILL EXTRACTION (Week 4)
+// -----------------------------
+const extractedSkills = [
+  "HTML",
+  "CSS",
+  "JavaScript",
+  "React",
+  "Git",
+  "SQL"
+];
+
+// Save to localStorage
+localStorage.setItem("resume_uploaded", "true");
+localStorage.setItem("resume_file", selectedFile.name);
+localStorage.setItem("extracted_skills", JSON.stringify(extractedSkills));
+
+// Redirect
+window.location.href = "./skills.html";
+
     });
   </script>
 </body>

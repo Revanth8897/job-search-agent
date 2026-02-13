@@ -43,6 +43,9 @@ body {
   color: white;
 }
 
+.btn-block {
+  width: 100%;
+}
 
 .btn-primary:hover {
   opacity: 0.9;
@@ -928,4 +931,649 @@ body {
 /* Job card action buttons should be equal width */
 .job-actions .btn {
   width: 140px;
+}
+/* ==============================
+   WEEK 4 DASHBOARD POLISH
+================================*/
+
+.dash-hero {
+  display: flex;
+  gap: 18px;
+  align-items: stretch;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    135deg,
+    rgba(99,102,241,0.10),
+    rgba(14,165,233,0.08),
+    rgba(168,85,247,0.08)
+  );
+}
+
+.dash-title {
+  font-size: 28px;
+  font-weight: 1000;
+}
+
+.dash-sub {
+  margin-top: 6px;
+  color: #334155;
+  font-weight: 700;
+  line-height: 1.6;
+  max-width: 720px;
+}
+
+.dash-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.dash-actions .btn {
+  width: auto;
+}
+
+.dash-mini {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(1, 1fr);
+  min-width: 220px;
+}
+
+.mini-card {
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 18px 40px rgba(2,6,23,0.06);
+}
+
+.mini-label {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.mini-value {
+  font-size: 24px;
+  font-weight: 1000;
+  margin-top: 6px;
+}
+
+.dash-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.dash-progress-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.progress-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.progress-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.progress-value {
+  font-size: 20px;
+  font-weight: 1000;
+  margin-top: 6px;
+}
+
+.dash-stats {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  transition: 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 50px rgba(2,6,23,0.08);
+}
+
+.stat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-label {
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.stat-value {
+  font-size: 34px;
+  font-weight: 1000;
+  margin-top: 10px;
+}
+
+.recent-list {
+  display: grid;
+  gap: 12px;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.empty-state {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px dashed rgba(99,102,241,0.35);
+  background: rgba(99,102,241,0.05);
+}
+
+.empty-icon {
+  font-size: 26px;
+}
+
+.roadmap {
+  display: grid;
+  gap: 14px;
+}
+
+.roadmap-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.roadmap-item.done {
+  border-color: rgba(34,197,94,0.25);
+  background: rgba(34,197,94,0.06);
+}
+
+.roadmap-item.active {
+  border-color: rgba(99,102,241,0.35);
+  background: rgba(99,102,241,0.06);
+}
+
+.roadmap-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 1000;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+}
+
+.roadmap-title {
+  font-weight: 1000;
+}
+
+/* Responsive */
+@media (min-width: 900px) {
+  .dash-mini {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-progress-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dash-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+/* ==============================
+   WEEK 4 RECOMMENDATIONS POLISH
+================================*/
+
+.reco-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    135deg,
+    rgba(14,165,233,0.10),
+    rgba(99,102,241,0.08),
+    rgba(168,85,247,0.08)
+  );
+  margin-bottom: 14px;
+}
+
+.reco-hero-right {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reco-title-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+/* ==============================
+   WEEK 4 APPLY PAGE POLISH
+================================*/
+
+.apply-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    135deg,
+    rgba(34,197,94,0.08),
+    rgba(14,165,233,0.08),
+    rgba(99,102,241,0.08)
+  );
+}
+
+.apply-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.apply-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.apply-preview-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.apply-tip {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px dashed rgba(99,102,241,0.35);
+  background: rgba(99,102,241,0.05);
+}
+
+.apply-tip-icon {
+  font-size: 22px;
+}
+
+.apply-form-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.apply-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 18px;
+}
+
+@media (min-width: 1000px) {
+  .apply-grid {
+    grid-template-columns: 1.05fr 1fr;
+    align-items: start;
+  }
+
+  .apply-preview {
+    position: sticky;
+    top: 18px;
+  }
+}
+/* ==============================
+   WEEK 4 TRACKING POLISH
+================================*/
+
+.track-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    135deg,
+    rgba(14,165,233,0.08),
+    rgba(99,102,241,0.08),
+    rgba(34,197,94,0.08)
+  );
+}
+
+.track-head-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.track-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.track-stat {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.track-num {
+  font-size: 28px;
+  font-weight: 1000;
+  margin-top: 6px;
+}
+
+@media (min-width: 900px) {
+  .track-stats {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.track-card {
+  padding: 18px;
+}
+
+.track-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.track-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.track-actions .select {
+  min-width: 180px;
+}
+/* ==============================
+   WEEK 4 RECOMMENDATIONS POLISH
+================================*/
+
+.reco-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    135deg,
+    rgba(99,102,241,0.10),
+    rgba(14,165,233,0.08),
+    rgba(168,85,247,0.08)
+  );
+}
+
+.reco-hero-right {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reco-summary {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+@media (min-width: 900px) {
+  .reco-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.reco-summary-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.reco-num {
+  font-size: 28px;
+  font-weight: 1000;
+  margin-top: 6px;
+}
+
+.reco-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.reco-top-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+@media (min-width: 900px) {
+  .reco-top-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.reco-top-card {
+  cursor: pointer;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  padding: 16px;
+  background: white;
+  transition: 0.2s;
+}
+
+.reco-top-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+}
+
+.reco-rank {
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 1000;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.25);
+  color: #16a34a;
+}
+
+.reco-top-title {
+  font-weight: 1000;
+  font-size: 16px;
+  margin-top: 12px;
+}
+
+/* Recommendations hero right badges fix */
+.reco-hero-right {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;   /* ✅ centers badges */
+  align-items: center;       /* ✅ vertically centers */
+  text-align: center;
+}
+
+.reco-hero-right .badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* ================================
+   FIX: Recommendations badge center
+================================ */
+
+.reco-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.reco-hero > div:first-child {
+  flex: 1;
+}
+
+
+.reco-hero-right {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+
+@media (max-width: 700px) {
+  .reco-hero-right {
+    justify-content: center;
+    width: 100%;
+  }
+}
+.reco-hero-right {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.reco-hero {
+  justify-content: center !important;
+}
+
+.reco-hero > div:first-child {
+  flex: 1;
+}
+
+.reco-hero-right {
+  flex: 1;
+  justify-content: center !important;
+}
+
+/* FIX: Center "Auto ranked" badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* FIX: Apply button alignment in job cards */
+.job-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* Keep left section full */
+.job-left {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Keep right buttons fixed aligned */
+.job-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  min-width: 160px;
+}
+
+/* Make Apply and Save same width */
+.job-actions .btn {
+  width: 100% !important;
+}
+
+@media (max-width: 700px) {
+  .job-card {
+    flex-direction: column;
+  }
+
+  .job-actions {
+    width: 100%;
+    flex-direction: row;
+  }
+
+  .job-actions .btn {
+    width: 100% !important;
+  }
 }

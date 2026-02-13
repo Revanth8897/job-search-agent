@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tracking | Job Agent</title>
-  <link rel="stylesheet" href="../../public/style.css" />
+  <link rel="stylesheet" href="../../public/style.css?v=4" />
+
 </head>
 <body>
   <div id="app"></div>
@@ -16,7 +17,6 @@
     requireAuth();
 
     const TRACKING_KEY = "tracking_jobs";
-
     const STATUS = ["Saved", "Applied", "Interview", "Offer", "Rejected"];
 
     function getTracking() {
@@ -50,17 +50,78 @@
       return "status-pill";
     }
 
+    function countByStatus(list) {
+      const map = {
+        total: list.length,
+        Saved: 0,
+        Applied: 0,
+        Interview: 0,
+        Offer: 0,
+        Rejected: 0
+      };
+
+      list.forEach((j) => {
+        if (map[j.status] !== undefined) map[j.status]++;
+      });
+
+      return map;
+    }
+
     function renderPage() {
       const tracking = getTracking();
+      const counts = countByStatus(tracking);
 
       renderDashboardLayout({
         active: "tracking",
         content: `
-          <h1 class="section-title">Tracking</h1>
-          <p class="section-subtitle">
-            Track your job applications (stored locally for Week 3 demo).
-          </p>
+          <div class="track-head">
+            <div>
+              <h1 class="section-title">Tracking</h1>
+              <p class="section-subtitle">
+                Track your applications. Stored locally (Week 4 polish).
+              </p>
+            </div>
 
+            <div class="track-head-actions">
+              <button class="btn btn-outline" id="exportBtn" style="width:auto;">
+                Export (Mock)
+              </button>
+
+              <button class="btn btn-outline" id="clearTrackingBtn" style="width:auto;">
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="track-stats">
+            <div class="track-stat">
+              <div class="muted">Total</div>
+              <div class="track-num">${counts.total}</div>
+            </div>
+
+            <div class="track-stat">
+              <div class="muted">Applied</div>
+              <div class="track-num">${counts.Applied}</div>
+            </div>
+
+            <div class="track-stat">
+              <div class="muted">Interview</div>
+              <div class="track-num">${counts.Interview}</div>
+            </div>
+
+            <div class="track-stat">
+              <div class="muted">Offer</div>
+              <div class="track-num">${counts.Offer}</div>
+            </div>
+
+            <div class="track-stat">
+              <div class="muted">Rejected</div>
+              <div class="track-num">${counts.Rejected}</div>
+            </div>
+          </div>
+
+          <!-- Filters -->
           <div class="filter-bar">
             <input class="input" id="searchTrack"
               placeholder="Search title / company..."
@@ -72,17 +133,13 @@
             </select>
 
             <div class="badge" id="trackCount">0 jobs</div>
-
-            <button class="btn btn-outline" id="clearTrackingBtn">
-              Clear All
-            </button>
           </div>
 
           ${
             tracking.length === 0
               ? `
                 <div class="card" style="margin-top:18px;">
-                  <h2 style="font-weight:900;">No tracked jobs yet</h2>
+                  <h2 style="font-weight:1000;">No tracked jobs yet</h2>
                   <p class="muted" style="margin-top:6px;">
                     Go to Recommendations → Apply. Then jobs will appear here.
                   </p>
@@ -104,8 +161,10 @@
       const statusFilter = document.getElementById("statusFilter");
       const trackCount = document.getElementById("trackCount");
       const clearTrackingBtn = document.getElementById("clearTrackingBtn");
+      const exportBtn = document.getElementById("exportBtn");
       const trackGrid = document.getElementById("trackGrid");
 
+      // Clear all
       if (clearTrackingBtn) {
         clearTrackingBtn.addEventListener("click", () => {
           const ok = confirm("Clear all tracked jobs?");
@@ -115,47 +174,80 @@
         });
       }
 
+      // Export mock
+     // Export REAL (Week 4)
+if (exportBtn) {
+  exportBtn.addEventListener("click", () => {
+    const data = getTracking();
+
+    if (data.length === 0) {
+      alert("No tracked jobs to export.");
+      return;
+    }
+
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      total: data.length,
+      jobs: data
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: "application/json"
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `job-tracking-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  });
+}
+
+
       function renderList(list) {
         if (!trackGrid) return;
 
         trackCount.textContent = `${list.length} jobs`;
 
         trackGrid.innerHTML = list.map((job) => `
-          <div class="job-card">
-            <div class="job-left">
-              <div class="track-row">
-                <div class="track-left">
-                  <div class="job-title">${job.title}</div>
-                  <div class="job-company">${job.company}</div>
-
-                  <div class="job-meta">
-                    <span class="badge">${job.location || "-"}</span>
-                    <span class="badge">${job.type || "-"}</span>
-                    <span class="badge">Source: ${job.source || "-"}</span>
-                    <span class="${statusClass(job.status)}">${job.status}</span>
-                  </div>
-
-                  <div class="muted" style="margin-top:10px; font-size:13px;">
-                    Applied at: <strong>${formatDate(job.appliedAt)}</strong>
-                  </div>
-                </div>
-
-                <div class="track-right">
-                  <select class="select" data-status="${job.id}">
-                    ${STATUS.map((s) =>
-                      `<option value="${s}" ${s === job.status ? "selected" : ""}>${s}</option>`
-                    ).join("")}
-                  </select>
-
-                  <button class="btn btn-outline" data-view="${job.id}">
-                    View
-                  </button>
-
-                  <button class="btn btn-danger" data-remove="${job.id}">
-                    Remove
-                  </button>
-                </div>
+          <div class="card track-card">
+            <div class="track-card-top">
+              <div class="track-title">
+                <div class="job-title">${job.title}</div>
+                <div class="job-company">${job.company}</div>
               </div>
+
+              <div class="track-pill-wrap">
+                <span class="${statusClass(job.status)}">${job.status}</span>
+              </div>
+            </div>
+
+            <div class="job-meta" style="margin-top:12px;">
+              <span class="badge">${job.location || "-"}</span>
+              <span class="badge">${job.type || "-"}</span>
+              <span class="badge">Source: ${job.source || "-"}</span>
+              <span class="badge">Updated: ${formatDate(job.appliedAt)}</span>
+            </div>
+
+            <div class="track-actions">
+              <select class="select" data-status="${job.id}">
+                ${STATUS.map((s) =>
+                  `<option value="${s}" ${s === job.status ? "selected" : ""}>${s}</option>`
+                ).join("")}
+              </select>
+
+              <button class="btn btn-outline" data-view="${job.id}">
+                View
+              </button>
+
+              <button class="btn btn-danger" data-remove="${job.id}">
+                Remove
+              </button>
             </div>
           </div>
         `).join("");
@@ -167,7 +259,7 @@
             const newStatus = select.value;
 
             const updated = getTracking().map((x) => {
-              if (x.id === id) return { ...x, status: newStatus };
+              if (x.id === id) return { ...x, status: newStatus, appliedAt: new Date().toISOString() };
               return x;
             });
 
@@ -207,7 +299,7 @@
           <div class="modal">
             <div class="modal-head">
               <div>
-                <div style="font-weight:900; font-size:18px;">${job.title}</div>
+                <div style="font-weight:1000; font-size:18px;">${job.title}</div>
                 <div class="muted">${job.company}</div>
               </div>
               <button class="modal-close" id="closeModal">✕</button>
@@ -222,15 +314,15 @@
               </div>
 
               <div style="margin-top:14px;">
-                <h3 style="font-weight:900;">Cover Letter</h3>
-                <p class="muted" style="margin-top:6px; line-height:1.6;">
+                <h3 style="font-weight:1000;">Cover Letter</h3>
+                <p class="muted" style="margin-top:6px; line-height:1.7;">
                   ${job.coverLetter ? job.coverLetter : "No cover letter added."}
                 </p>
               </div>
 
               <div style="margin-top:14px;">
-                <h3 style="font-weight:900;">Notes</h3>
-                <p class="muted" style="margin-top:6px; line-height:1.6;">
+                <h3 style="font-weight:1000;">Notes</h3>
+                <p class="muted" style="margin-top:6px; line-height:1.7;">
                   ${job.notes ? job.notes : "No notes added."}
                 </p>
               </div>
@@ -284,5 +376,3 @@
   </script>
 </body>
 </html>
-
-<!-- week 3 -->

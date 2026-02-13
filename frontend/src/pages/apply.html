@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Apply | Job Agent</title>
-  <link rel="stylesheet" href="../../public/style.css" />
+  <link rel="stylesheet" href="../../public/style.css?v=4" />
+
 </head>
 <body>
   <div id="app"></div>
@@ -16,6 +17,7 @@
     requireAuth();
 
     const TRACKING_KEY = "tracking_jobs";
+    const DRAFT_KEY = "apply_draft";
 
     // Same mock list as recommendations (IDs must match)
     const jobs = [
@@ -93,9 +95,34 @@
       setTracking(list);
     }
 
+    // -----------------------------
+    // Draft (Week 4 polish)
+    // -----------------------------
+    function getDraft() {
+      try {
+        return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function setDraft(draft) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    }
+
+    function clearDraft() {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+
+    // -----------------------------
+    // Find job
+    // -----------------------------
     const jobId = getQueryParam("id");
     const job = jobs.find((j) => j.id === jobId);
 
+    // -----------------------------
+    // Job not found
+    // -----------------------------
     if (!job) {
       renderDashboardLayout({
         active: "reco",
@@ -104,47 +131,86 @@
           <p class="section-subtitle">Job not found.</p>
 
           <div class="card" style="margin-top:18px;">
-            <p class="muted">Go back to Recommendations page and try again.</p>
+            <h2 style="font-weight:1000;">Invalid job link</h2>
+            <p class="muted" style="margin-top:6px;">
+              Go back to Recommendations page and try again.
+            </p>
+
             <div class="row">
-              <a class="btn btn-primary" href="./recommendations.html">Back</a>
+              <a class="btn btn-primary" href="./recommendations.html" style="width:auto;">
+                Back to Recommendations
+              </a>
             </div>
           </div>
         `
       });
     } else {
+      // -----------------------------
+      // Apply UI
+      // -----------------------------
       renderDashboardLayout({
         active: "reco",
         content: `
-          <h1 class="section-title">Apply</h1>
-          <p class="section-subtitle">
-            Submit your application details (mock UI). This will be saved in Tracking.
-          </p>
+          <div class="apply-head">
+            <div>
+              <h1 class="section-title">Apply</h1>
+              <p class="section-subtitle">
+                Fill application details. This will be saved in Tracking.
+              </p>
+            </div>
 
-          <div class="grid-3" style="grid-template-columns: 1fr; margin-top:18px;">
-            <div class="card">
-              <h2 style="font-weight:900;">Job Details</h2>
+            <div class="apply-badges">
+              <span class="badge">Auto-save draft</span>
+              <span class="badge">Tracking enabled</span>
+            </div>
+          </div>
 
-              <div style="margin-top:12px;">
-                <div style="font-weight:900; font-size:18px;">${job.title}</div>
-                <div class="muted" style="margin-top:4px;">${job.company}</div>
-
-                <div class="job-meta" style="margin-top:12px;">
-                  <span class="badge">${job.location}</span>
-                  <span class="badge">${job.type}</span>
-                  <span class="badge">Source: ${job.source}</span>
+          <div class="apply-grid" style="margin-top:18px;">
+            <!-- Job Preview -->
+            <div class="card apply-preview">
+              <div class="apply-preview-top">
+                <div>
+                  <div style="font-weight:1000; font-size:18px;">${job.title}</div>
+                  <div class="muted" style="margin-top:4px;">${job.company}</div>
                 </div>
 
-                <div style="margin-top:14px;">
-                  <h3 style="font-weight:900;">Description</h3>
-                  <p class="muted" style="margin-top:6px; line-height:1.6;">
-                    ${job.desc}
-                  </p>
+                <span class="badge">Job Preview</span>
+              </div>
+
+              <div class="job-meta" style="margin-top:14px;">
+                <span class="badge">${job.location}</span>
+                <span class="badge">${job.type}</span>
+                <span class="badge">Source: ${job.source}</span>
+              </div>
+
+              <div style="margin-top:16px;">
+                <h3 style="font-weight:1000;">Description</h3>
+                <p class="muted" style="margin-top:8px; line-height:1.7;">
+                  ${job.desc}
+                </p>
+              </div>
+
+              <div class="hr"></div>
+
+              <div class="apply-tip">
+                <div class="apply-tip-icon">💡</div>
+                <div>
+                  <div style="font-weight:1000;">Pro tip</div>
+                  <div class="muted" style="margin-top:4px;">
+                    Add recruiter name + job URL in notes. Your guide will love this.
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="card" style="margin-top:18px;">
-              <h2 style="font-weight:900;">Application Form</h2>
+            <!-- Form -->
+            <div class="card apply-form-card">
+              <div class="apply-form-head">
+                <h2 style="font-weight:1000;">Application Form</h2>
+                <div class="muted" id="draftStatus" style="font-weight:800;">
+                  Draft not saved yet
+                </div>
+              </div>
 
               <form id="applyForm" style="margin-top:14px;">
                 <label class="label">Cover Letter (optional)</label>
@@ -159,13 +225,17 @@
                   <textarea
                     class="textarea"
                     id="notes"
-                    placeholder="Add notes like: recruiter name, job link, salary, etc..."
+                    placeholder="Recruiter name, job URL, salary, follow-up date..."
                   ></textarea>
                 </div>
 
-                <div class="row" style="margin-top:18px;">
+                <div class="apply-actions">
                   <button class="btn btn-primary" id="submitBtn" type="submit" style="width:auto;">
                     Submit Application
+                  </button>
+
+                  <button class="btn btn-outline" id="clearDraftBtn" type="button" style="width:auto;">
+                    Clear Draft
                   </button>
 
                   <a class="btn btn-outline" href="./recommendations.html" style="width:auto;">
@@ -182,7 +252,64 @@
       const submitBtn = document.getElementById("submitBtn");
       const coverLetter = document.getElementById("coverLetter");
       const notes = document.getElementById("notes");
+      const draftStatus = document.getElementById("draftStatus");
+      const clearDraftBtn = document.getElementById("clearDraftBtn");
 
+      // -----------------------------
+      // Load draft
+      // -----------------------------
+      const draft = getDraft();
+      if (draft?.jobId === job.id) {
+        coverLetter.value = draft.coverLetter || "";
+        notes.value = draft.notes || "";
+        draftStatus.textContent = "Draft loaded ✓";
+      }
+
+      // -----------------------------
+      // Auto-save draft (Week 4)
+      // -----------------------------
+      let draftTimer = null;
+
+      function markSaved() {
+        draftStatus.textContent = "Draft saved ✓";
+      }
+
+      function markSaving() {
+        draftStatus.textContent = "Saving draft...";
+      }
+
+      function saveDraftNow() {
+        setDraft({
+          jobId: job.id,
+          coverLetter: coverLetter.value.trim(),
+          notes: notes.value.trim(),
+          updatedAt: new Date().toISOString()
+        });
+        markSaved();
+      }
+
+      function scheduleDraftSave() {
+        markSaving();
+        clearTimeout(draftTimer);
+        draftTimer = setTimeout(saveDraftNow, 500);
+      }
+
+      coverLetter.addEventListener("input", scheduleDraftSave);
+      notes.addEventListener("input", scheduleDraftSave);
+
+      clearDraftBtn.addEventListener("click", () => {
+        const ok = confirm("Clear saved draft?");
+        if (!ok) return;
+
+        coverLetter.value = "";
+        notes.value = "";
+        clearDraft();
+        draftStatus.textContent = "Draft cleared";
+      });
+
+      // -----------------------------
+      // Submit
+      // -----------------------------
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -197,6 +324,8 @@
           notes: notes.value.trim()
         });
 
+        clearDraft();
+
         submitBtn.disabled = false;
         submitBtn.classList.remove("btn-loading");
         submitBtn.innerHTML = "Submit Application";
@@ -209,5 +338,3 @@
   </script>
 </body>
 </html>
-
-<!-- week3 -->
